@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>TREASURE HUNT</title>
+<!-- Bootstrap grid + utilities only (no reboot, so the game's own styling is untouched). css/style.css has a fallback if offline. -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap-grid.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap-utilities.min.css">
+<link rel="stylesheet" href="src/css/style.css">
+</head>
+<body>
+
+<div id="menuScreen" class="screen active">
+  <h1 class="title">TREASURE HUNT</h1>
+  <div class="subtitle">A 2D + REALISTIC 3D ADVENTURE GAME</div>
+  <div class="menu-list">
+    <button class="btn primary" onclick="goto('mapSelect')">Map Selection</button>
+    <button class="btn" onclick="goto('instructions')">Instructions</button>
+    <button class="btn" onclick="goto('settings')">Settings</button>
+  </div>
+</div>
+
+<div id="mapSelectScreen" class="screen">
+  <div class="topbar"><button class="backbtn" aria-label="Back" onclick="goBack('menu')">&larr;</button><span class="subtitle" style="margin:0">SELECT MAP</span><span></span></div>
+  <div class="container-fluid th-wrap"><div class="row g-3 justify-content-center" id="mapCards"></div></div>
+</div>
+
+<div id="modeScreen" class="screen">
+<div class="topbar"><button class="backbtn" aria-label="Back" onclick="goBack('mapSelect')">&larr;</button><span class="subtitle" style="margin:0"></span><span></span></div>
+  <h1 class="title" style="font-size:26px">CHOOSE MODE</h1>
+  <div class="menu-list">
+    <div class="sep-label">SOLO CHALLENGE</div>
+    <button class="btn primary" onclick="setMode('free')">No time limit</button>
+    <button class="btn" onclick="setMode('time')">With time limit</button>
+    <div class="sep-label">VS COMPUTER</div>
+    <button class="btn" id="competeBtn" onclick="setMode('compete')">With time limit</button>
+  </div>
+</div>
+
+<div id="diffScreen" class="screen">
+  <div class="topbar"><button class="backbtn" aria-label="Back" onclick="goBack('mode')">&larr;</button><span></span><span></span></div>
+  <h1 class="title" style="font-size:26px">CHOOSE DIFFICULTY</h1>
+  <div class="menu-list" id="diffFree" style="display:none">
+    <button class="btn" onclick="setDiff('easy')">Easy — 32×22 map</button>
+    <button class="btn" onclick="setDiff('medium')">Medium — 40×26 map</button>
+    <button class="btn" onclick="setDiff('hard')">Hard — 48×30 map</button>
+  </div>
+  <div class="menu-list" id="diffTimed">
+    <button class="btn" onclick="setDiff('easy')">Easy — 15 min, 32×22 map, slower opponent</button>
+    <button class="btn" onclick="setDiff('medium')">Medium — 10 min, 40×26 map, balanced opponent</button>
+    <button class="btn" onclick="setDiff('hard')">Hard — 5 min, 48×30 map, near-optimal opponent</button>
+  </div>
+</div>
+
+<div id="instructionsScreen" class="screen">
+  <div class="topbar"><button class="backbtn" aria-label="Back" onclick="goBack('menu')">&larr;</button><span class="subtitle" style="margin:0">INSTRUCTIONS</span><span></span></div>
+  <div class="instr-text">
+    <h4>Controls</h4>
+    <span class="kbd">W/&uarr;</span> Up &nbsp; <span class="kbd">S/&darr;</span> Down &nbsp; <span class="kbd">A/&larr;</span> Left &nbsp; <span class="kbd">D/&rarr;</span> Right &nbsp; <span class="kbd">M</span> Switch World (Mirror map) &nbsp; <span class="kbd">P/ESC</span> Pause &nbsp; <span class="kbd">V</span> 2D/3D view &nbsp; <span class="kbd">Q/E</span> Rotate camera (3D; drag &amp; wheel also work)
+    <h4>Objective</h4>
+    Explore the map, collect keys and clues, avoid hazards, unlock restricted areas and reach the treasure before time runs out.
+    <h4>Collectibles</h4>
+    Coins (+10), Clues (+50), Keys (+100, unlock doors), Checkpoints (+75, saves your respawn point).
+    <h4>Hints</h4>
+    Spend score on four hint tiers: Basic Direction (-50), Navigation (-100), Advanced Path (-150), Key/Clue Location (-100). Score never goes below zero and hints have a short cooldown.
+    <h4>Computer Opponent</h4>
+    In Compete mode a real A* pathfinding opponent races you to the treasure. It respects walls, doors and objectives — it never teleports or cheats.
+    <h4>Enhanced 3D View</h4>
+    Press <span class="kbd">V</span>, the 3D button in-game, or the Settings toggle to switch to a realistic 3D view: PBR materials, real-time shadows, dynamic lights, fog, water and bloom. Pick Low / Medium / High quality in Settings.
+    <h4>Levels</h4>
+    Every map has its own obstacles and monsters, different for Easy, Medium and Hard. Higher difficulty means bigger maps, denser obstacles, more and faster monsters — and some hunters that chase you when they see you.
+    <h4>CG Concepts Box</h4>
+    A live panel shows the computer graphics concepts in use (transformations, matrices, clipping, Bresenham, shadow maps, frustum culling...) with real-time values. Hide it in Settings.
+    <h4>Lives &amp; Health</h4>
+    Hazard tiles cost 25 health. At 0 health you lose a life and respawn at your last checkpoint. Lose all 3 lives and it's game over.
+  </div>
+</div>
+
+<div id="settingsScreen" class="screen">
+  <div class="topbar"><button class="backbtn" aria-label="Back" onclick="goBack('menu')">&larr;</button><span class="subtitle" style="margin:0">SETTINGS</span><span></span></div>
+  <div class="settings-list">
+    <div class="setting-row">Animations<div class="toggle on" id="t_anim" onclick="toggleSetting('anim')"></div></div>
+    <div class="setting-row">Minimap<div class="toggle on" id="t_minimap" onclick="toggleSetting('minimap')"></div></div>
+    <div class="setting-row">3D View<div class="toggle on" id="t_view3d" onclick="toggleSetting('view3d')"></div></div>
+    <div class="setting-row">Instructions / Info Window<div class="toggle on" id="t_infoPanel" onclick="toggleSetting('infoPanel')"></div></div>
+    <div class="setting-row">CG Concepts Box<div class="toggle" id="t_cgPanel" onclick="toggleSetting('cgPanel')"></div></div>
+    <div class="setting-row">3D Quality<button class="qbtn" id="qualityBtn" onclick="cycleQuality()">MEDIUM</button></div>
+  </div>
+ <!-- <div class="small-note">Saved automatically to this browser.</div> -->
+</div>
+
+<div id="gameScreen" class="screen">
+  <div id="gameWrap">
+    <canvas id="gameCanvas" width="720" height="480"></canvas>
+    <canvas id="gl3d" width="720" height="480"></canvas>
+    <div id="cgPanel" class="cg-panel"></div>
+    <div class="hud">
+      <div class="hud-panel hud-left">
+        <div class="hud-top"><div class="mapname" id="hudMapName">MAP</div><button class="minbtn" id="hudMinBtn" onclick="toggleHud()" aria-label="Minimize info panel">&minus;</button></div><div class="hud-body">
+        <div class="stat-row"><span class="hearts" id="hudLives">&hearts;&hearts;&hearts;</span><span id="hudScore">Score: 500</span></div>
+        <div id="healthbar"><div id="healthfill"></div></div>
+        <div class="objectives" id="hudObjectives"></div>
+        <div class="inv" id="hudInv"></div>
+        <div class="hint-panel" id="hintPanel"></div>
+        <div class="hint-msg" id="hintMsg"></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;">
+        <div class="hud-panel"><div class="timer" id="hudTimer">02:00</div></div>
+        <div class="minimap-panel">
+          <div class="mm-label"><span class="mm-text">MINIMAP</span> <button class="minbtn" id="mmMinBtn" onclick="toggleMapPanel()" aria-label="Minimize minimap">&minus;</button></div>
+          <canvas id="minimapCanvas" width="170" height="120"></canvas>
+        </div>
+        <div class="btnrow"><button id="viewBtn" onclick="toggleView()">3D View</button><button id="pauseBtn" onclick="pauseGame()">&#10073;&#10073; Pause</button></div>
+      </div>
+    </div>
+     <div id="touchControls" class="touch-controls">
+      <div class="dpad">
+        <button class="dbtn dbtn-up" data-key="w" aria-label="Move up">&#9650;</button>
+        <button class="dbtn dbtn-left" data-key="a" aria-label="Move left">&#9664;</button>
+        <button class="dbtn dbtn-right" data-key="d" aria-label="Move right">&#9654;</button>
+        <button class="dbtn dbtn-down" data-key="s" aria-label="Move down">&#9660;</button>
+      </div>
+      <div class="rotbtns"><button class="dbtn rotbtn" data-key="q" aria-label="Rotate camera left">&#8634;</button><button class="dbtn rotbtn" data-key="e" aria-label="Rotate camera right">&#8635;</button></div>
+      <button id="worldSwitchBtn" class="dbtn worldbtn" aria-label="Switch world">M</button>
+    </div>
+    <div class="overlay" id="pauseOverlay">
+      <div class="box">
+        <h2>PAUSED</h2>
+        <div class="menu-list">
+          <button class="btn primary" onclick="resumeGame()">Resume</button>
+          <button class="btn" onclick="restartMap()">Restart</button>
+          <button class="btn" onclick="fromPause('instructions')">Instructions</button>
+          <button class="btn" onclick="fromPause('settings')">Settings</button>
+          <button class="btn" onclick="quitToMenu()">Main Menu</button>
+        </div>
+      </div>
+    </div>
+    <div class="overlay" id="resultsOverlay">
+      <div class="box">
+        <h2 id="resultsTitle">RESULTS</h2>
+        <canvas id="winScene" width="240" height="130" style="display:none;margin:0 auto 12px;border-radius:6px;background:#0d0f14;"></canvas>
+        <div class="results-table" id="resultsBody"></div>
+        <div class="menu-list">
+          <button class="btn primary" onclick="restartMap()">Retry</button>
+          <button class="btn" onclick="goto('mapSelect')">Map Selection</button>
+          <button class="btn" onclick="quitToMenu()">Main Menu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modules load in dependency order. Everything attaches to a single
+     global "TH" namespace object (no ES modules), so this also works
+     when the file is opened directly from disk (file://) rather than
+     through a local server. -->
+<script src="src/js/level/levelgen_wasm.js"></script>
+<script src="src/js/level/levelgen.js"></script>
+<script src="src/js/level/themes.js"></script>
+<script src="src/js/core/cg.js"></script>
+<script src="src/js/level/maps.js"></script>
+<script src="src/js/core/pathfinding.js"></script>
+<script src="src/js/core/collision.js"></script>
+<script src="src/js/core/gameState.js"></script>
+<script src="src/js/core/score.js"></script>
+<script src="src/js/core/timer.js"></script>
+<script src="src/js/gameplay/hints.js"></script>
+<script src="src/js/render2d/animation.js"></script>
+<script src="src/js/render2d/camera.js"></script>
+<script src="src/js/gameplay/collectibles.js"></script>
+<script src="src/js/gameplay/player.js"></script>
+<script src="src/js/gameplay/computerOpponent.js"></script>
+<script src="src/js/gameplay/obstacles.js"></script>
+<script src="src/js/render2d/sprites2d.js"></script>
+<script src="src/js/render3d/gl3d.js"></script>
+<script src="src/js/render3d/textures3d.js"></script>
+<script src="src/js/render3d/rigs3d.js"></script>
+<script src="src/js/render3d/scene3d.js"></script>
+<script src="src/js/ui/cgpanel.js"></script>
+<script src="src/js/render2d/renderer.js"></script>
+<script src="src/js/ui/ui.js"></script>
+<script src="src/js/core/game.js"></script>
+<script src="src/js/ui/touchControls.js"></script>
+<script src="src/js/core/main.js"></script>
+</body>
+</html>
