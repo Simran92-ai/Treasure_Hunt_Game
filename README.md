@@ -1,4 +1,4 @@
-# Treasure Hunt — Computer Graphics Project
+# Treasure Hunt 
 
 A browser game with two renderers on the same game logic:
 
