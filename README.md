@@ -1,4 +1,4 @@
-# Treasure Hunt 
+# Treasure Hunt Game
 
 A browser game with two renderers on the same game logic:
 
